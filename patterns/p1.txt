@@ -1,0 +1,18 @@
+! simple rectangle 2
+
+> 1 4
+
+.OOOOOOOO.
+.O......O.
+.O......O.
+.OOOOOOOO.
+
+! 
+
+> 6 2
+
+.OOOOOOOO.
+.OO....OO.
+.O......O.
+.OO....OO.
+.OOOOOOOO.
