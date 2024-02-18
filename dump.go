@@ -8,13 +8,13 @@ import (
 const printableAliveCell cellCharacter = '+'
 const printableDeadCell cellCharacter = ' '
 
-func (g GOL) dump() {
+func (g *GOL) dump() {
 	sb := strings.Builder{}
 
-	bh := make([]byte, g.grigSize+2, g.grigSize+2)
+	bh := make([]byte, g.gridSize+2, g.gridSize+2)
 	i := 0
 	bh[i] = '|'
-	for i++; i < g.grigSize+1; i++ {
+	for i++; i < g.gridSize+1; i++ {
 		bh[i] = '-'
 	}
 	bh[i] = '|'
