@@ -59,10 +59,12 @@ func setPatternsFromFile(fn string, g GOL) {
 		for w, pline := range patterData[patternStartLine:i] {
 			pattern[w] = make([]byte, len(pline), len(pline))
 			for u, cell := range pline {
-				if cell == 'O' {
+				if cell == printableAliveCell {
 					pattern[w][u] = aliveCell
-				} else {
+				} else if cell == printableDeadCell {
 					pattern[w][u] = deadCell
+				} else {
+					panic(fmt.Sprintf("\nunexpected cell character: %q in pattern. row: %d, cell: %d", string(cell), w, u))
 				}
 			}
 		}
