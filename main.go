@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 type controlAction byte
@@ -19,10 +20,14 @@ const (
 func main() {
 	fmt.Printf("\nmain")
 
-	const gridSize int = 16
+	const gridSize int = 64
 	g := newGOL(gridSize)
 
-	setPatternsFromFile(os.Args[1], g)
+	if strings.Contains(os.Args[1], "patterns") {
+		setPatternsFromFile(os.Args[1], g)
+	} else {
+		setGridFromFile(os.Args[1], g)
+	}
 	g.dump()
 
 	actionStream := make(chan controlAction)

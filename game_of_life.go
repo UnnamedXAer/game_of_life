@@ -2,10 +2,10 @@ package main
 
 import "fmt"
 
-type cellCharacter = byte
+type cellState = byte
 
-const aliveCell cellCharacter = '@'
-const deadCell cellCharacter = 0
+const aliveCell cellState = 1
+const deadCell cellState = 0
 
 type point struct {
 	y, x int
@@ -19,7 +19,7 @@ type GOL struct {
 	grid     golGrid
 }
 
-func newGOL(n int) GOL {
+func newGOL(n int) *GOL {
 	g := GOL{
 		gridSize: n,
 		grid:     make(golGrid, n, n),
@@ -30,7 +30,7 @@ func newGOL(n int) GOL {
 		g.grid[i] = make([]byte, n, n)
 	}
 
-	return g
+	return &g
 }
 
 func (g *GOL) nextGeneration() {
@@ -54,7 +54,7 @@ func (g *GOL) nextGeneration() {
 	g.grid = grid
 }
 
-func getNextGenerationState(aliveNeighbours int, c cellCharacter) cellCharacter {
+func getNextGenerationState(aliveNeighbours int, c cellState) cellState {
 
 	if c == aliveCell {
 

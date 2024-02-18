@@ -5,9 +5,9 @@ import "testing"
 func TestGetNextGenerationState(t *testing.T) {
 	testCases := []struct {
 		desc            string
-		c               cellCharacter
+		c               cellState
 		aliveNeighbours int
-		want            cellCharacter
+		want            cellState
 	}{
 		{
 			desc:            "alive - dies by underpopulation",

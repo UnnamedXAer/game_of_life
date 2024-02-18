@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-const printableAliveCell cellCharacter = '@'
-const printableDeadCell cellCharacter = '.'
+const printableAliveCell cellState = '@'
+const printableDeadCell cellState = '.'
 
 func (g *GOL) dump() {
 	sb := strings.Builder{}

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func setPatternsFromFile(fn string, g GOL) {
+func setPatternsFromFile(fn string, g *GOL) {
 	fnClean := filepath.Clean(fn)
 	b, err := os.ReadFile(fnClean)
 	if err != nil {
@@ -140,11 +140,58 @@ func extractStartPosition(lineSize int, line []byte, i int) point {
 	return point{y, x}
 }
 
-func setPattern(pattern [][]byte, startPos point, g GOL) {
+func setPattern(pattern [][]byte, startPos point, g *GOL) {
 
 	y := startPos.y
 	x := startPos.x
 	for i, pline := range pattern {
 		copy(g.grid[y+i][x:x+len(pline)], pline)
 	}
+}
+
+func setGridFromFile(fn string, g *GOL) {
+
+	fnClean := filepath.Clean(fn)
+	b, err := os.ReadFile(fnClean)
+	if err != nil {
+		panic(fmt.Errorf("input file: %w", err))
+	}
+
+	grid := golGrid(bytes.Split(b, []byte{'\n'}))
+
+	gridSize := len(grid) // max from no of rows or the longest row
+	for y, row := range grid {
+		for x, v := range row {
+			if v == printableAliveCell {
+				grid[y][x] = aliveCell
+				continue
+			}
+
+			if v == printableDeadCell {
+				grid[y][x] = deadCell
+				continue
+			}
+			panic(fmt.Sprintf("\nunknown character: %q, at: %d x %d", string(v), y, x))
+		}
+		if len(row) > gridSize {
+			gridSize = len(row)
+		}
+	}
+
+	if gridSize > len(grid) {
+		oldGrid := grid
+		grid = make(golGrid, gridSize, gridSize)
+		copy(grid, oldGrid)
+	}
+
+	for y := 0; y < gridSize; y++ {
+		if len(grid[y]) < gridSize {
+			row := grid[y]
+			grid[y] = make([]byte, gridSize, gridSize)
+			copy(grid[y], row)
+		}
+	}
+
+	g.grid = grid
+	g.gridSize = gridSize
 }
