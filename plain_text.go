@@ -158,6 +158,18 @@ func setGridFromFile(fn string, g *GOL) {
 	}
 
 	grid := golGrid(bytes.Split(b, []byte{'\n'}))
+	grid = make(golGrid, 0, 8)
+
+	grid = append(grid, make([]byte, 0, 8))
+	i := 0
+	for _, v := range b {
+		if v == '\n' {
+			grid = append(grid, make([]byte, 0, len(grid[i])))
+			i++
+			continue
+		}
+		grid[i] = append(grid[i], v)
+	}
 
 	gridSize := len(grid) // max from no of rows or the longest row
 	for y, row := range grid {
@@ -177,6 +189,16 @@ func setGridFromFile(fn string, g *GOL) {
 			gridSize = len(row)
 		}
 	}
+
+	expectedGridSize := 4
+	for {
+		if expectedGridSize >= gridSize {
+			break
+		}
+
+		expectedGridSize *= 2
+	}
+	gridSize = expectedGridSize
 
 	if gridSize > len(grid) {
 		oldGrid := grid
