@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strings"
 )
@@ -30,6 +31,19 @@ func main() {
 	}
 	g.dump()
 
+	f := math.Log2(float64(g.gridSize))
+	root := g.buildNode(int(f)+1, g.gridSize, 0, 0)
+
+	// TODO: display grid from the tree
+
+	fmt.Printf("\nroot: %v", root)
+
+	// return
+
+	goLife(g)
+}
+
+func goLife(g *GOL) {
 	actionStream := make(chan controlAction)
 	go readInput(actionStream)
 
@@ -47,7 +61,6 @@ func main() {
 		case previous:
 			g.prevGeneration()
 			g.dump()
-			// fmt.Printf("\nprevious not implemented yet :(")
 
 		default:
 		}

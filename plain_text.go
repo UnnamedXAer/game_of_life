@@ -190,7 +190,7 @@ func setGridFromFile(fn string, g *GOL) {
 		}
 	}
 
-	expectedGridSize := 4
+	expectedGridSize := 1
 	for {
 		if expectedGridSize >= gridSize {
 			break
