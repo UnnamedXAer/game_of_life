@@ -17,6 +17,7 @@ type GOL struct {
 	gridSize int
 	history  []golGrid
 	grid     golGrid
+	root     *node
 }
 
 func newGOL(n int) *GOL {

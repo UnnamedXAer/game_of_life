@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"math"
+)
+
 type nodeChildren struct {
 	nw, ne, sw, se *node
 }
@@ -9,17 +14,19 @@ type node struct {
 	level      int          // 1 for leaf, 2 for node consisting of four leave, >= 3 for others
 	state      cellState    // only matters if a leaf node
 	population int          // numbers of active nodes expected to be 0..4
-	next       *node        // nil if not computed yet
+	size       int          // size of the square, that this node represents
+	// next       *node        // nil if not computed yet
+	label string // temporary for debugging info
 }
 
 type nodeMap map[nodeChildren]*node
 
 var (
-	aliveLeaf = &node{state: aliveCell, level: 1, population: 1}
-	deadLeaf  = &node{state: deadCell, level: 1, population: 0}
+	aliveLeaf = &node{state: aliveCell, level: 1, population: 1, size: 1, label: "aliveLeaf"}
+	deadLeaf  = &node{state: deadCell, level: 1, population: 0, size: 1, label: "deadLeaf"}
 )
 
-func newNode(children nodeChildren, level int) *node {
+func newNode(children nodeChildren, level int, size int, label string) *node {
 	population := children.nw.population + children.ne.population + children.sw.population + children.se.population
 
 	state := deadCell
@@ -32,23 +39,10 @@ func newNode(children nodeChildren, level int) *node {
 		level:      level,
 		state:      state,
 		population: population,
+		size:       size,
+		label:      label,
 	}
-
 }
-
-// func newLeafNode(state cellState) *node {
-// 	population := 0
-
-// 	if state == aliveCell {
-// 		population = 1
-// 	}
-
-// 	return &node{
-// 		level:      1,
-// 		state:      state,
-// 		population: population,
-// 	}
-// }
 
 const (
 	nwPos = iota
@@ -57,12 +51,17 @@ const (
 	sePos
 )
 
-func (g *GOL) buildNode(level int, size int, y, x int) *node {
+func (g *GOL) buildTree() {
+	f := math.Log2(float64(g.gridSize))
+	g.root = g.buildNode(int(f)+1, g.gridSize, 0, 0, "root")
+}
+
+func (g *GOL) buildNode(level int, size int, y, x int, label string) *node {
 
 	children := nodeChildren{}
 
 	if level == 2 {
-		return newNode(g.buildLeafs(y, x), level-1)
+		return newNode(g.buildLeafs(y, x), level, size, label)
 	}
 
 	halfSize := size / 2
@@ -72,20 +71,20 @@ func (g *GOL) buildNode(level int, size int, y, x int) *node {
 
 			switch i {
 			case nwPos:
-				children.nw = g.buildNode(level-1, halfSize, y, x)
+				children.nw = g.buildNode(level-1, halfSize, y, x, "nw")
 			case nePos:
-				children.ne = g.buildNode(level-1, halfSize, y, x+halfSize)
+				children.ne = g.buildNode(level-1, halfSize, y, x+halfSize, "ne")
 			case swPos:
-				children.sw = g.buildNode(level-1, halfSize, y+halfSize, x)
+				children.sw = g.buildNode(level-1, halfSize, y+halfSize, x, "sw")
 			case sePos:
-				children.se = g.buildNode(level-1, halfSize, y+halfSize, x+halfSize)
+				children.se = g.buildNode(level-1, halfSize, y+halfSize, x+halfSize, "se")
 			}
 
 			i++
 		}
 	}
 
-	return newNode(children, level)
+	return newNode(children, level, size, label)
 }
 
 // buildLeafs returns children for nodes, the children are leaf nodes either alive or dead
@@ -103,14 +102,20 @@ func (g *GOL) buildLeafs(y, x int) nodeChildren {
 				tmp = deadLeaf
 			}
 
+			tmp = cloneNode(tmp)
+
 			switch i {
 			case nwPos:
+				tmp.label += fmt.Sprintf("_nw_%d_%d", yy, xx)
 				children.nw = tmp
 			case nePos:
+				tmp.label += fmt.Sprintf("_ne_%d_%d", yy, xx)
 				children.ne = tmp
 			case swPos:
+				tmp.label += fmt.Sprintf("_sw_%d_%d", yy, xx)
 				children.sw = tmp
 			case sePos:
+				tmp.label += fmt.Sprintf("_se_%d_%d", yy, xx)
 				children.se = tmp
 			}
 
@@ -119,4 +124,15 @@ func (g *GOL) buildLeafs(y, x int) nodeChildren {
 	}
 
 	return children
+}
+
+func cloneNode(n *node) *node {
+	return &node{
+		children:   n.children,
+		level:      n.level,
+		state:      n.state,
+		population: n.population,
+		size:       n.size,
+		label:      n.label,
+	}
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"os"
 	"strings"
 )
@@ -29,18 +28,14 @@ func main() {
 	} else {
 		setGridFromFile(os.Args[1], g)
 	}
-	g.dump()
 
-	f := math.Log2(float64(g.gridSize))
-	root := g.buildNode(int(f)+1, g.gridSize, 0, 0)
-
-	// TODO: display grid from the tree
-
-	fmt.Printf("\nroot: %v", root)
+	fmt.Println()
+	g.dumpTree()
 
 	// return
 
-	goLife(g)
+	// g.dump()
+	// goLife(g)
 }
 
 func goLife(g *GOL) {

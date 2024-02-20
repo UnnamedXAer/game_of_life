@@ -72,6 +72,8 @@ func setPatternsFromFile(fn string, g *GOL) {
 
 		setPattern(pattern, p, g)
 	}
+
+	g.buildTree()
 }
 
 // coordinates where the pattern should be placed on the grid (its left top corner)
@@ -216,4 +218,6 @@ func setGridFromFile(fn string, g *GOL) {
 
 	g.grid = grid
 	g.gridSize = gridSize
+
+	g.buildTree()
 }

@@ -12,7 +12,7 @@
       "program": "${workspaceFolder}",
       // "args": ["${workspaceFolder}/patterns/p1.txt"],
       "args": ["${workspaceFolder}/grids/g1.txt"],
-      "console": "externalTerminal"
+      // "console": "externalTerminal"
     }
   ]
 }
