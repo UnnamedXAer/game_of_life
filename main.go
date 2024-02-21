@@ -30,11 +30,11 @@ func main() {
 	}
 
 	fmt.Println()
-	g.dumpTree()
+	g.dumpTreeRecursive()
 
 	// return
 
-	// g.dump()
+	g.dump()
 	// goLife(g)
 }
 
