@@ -32,9 +32,11 @@ func main() {
 	fmt.Println()
 	g.dumpTreeRecursive()
 
+	evolve(g.root)
+
 	// return
 
-	g.dump()
+	// g.dump()
 	// goLife(g)
 }
 

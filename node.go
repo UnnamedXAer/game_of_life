@@ -54,7 +54,16 @@ const (
 func (g *GOL) buildTree() {
 	f := math.Log2(float64(g.gridSize))
 	g.root = g.buildNode(int(f)+1, g.gridSize, 0, 0, "root")
+
+	i := 0
+	for children, cnt := range cache {
+		i++
+		fmt.Printf("\n%3d. %+v: %4d", i, children, cnt)
+	}
+	fmt.Println()
 }
+
+var cache map[nodeChildren]int = make(map[nodeChildren]int)
 
 func (g *GOL) buildNode(level int, size int, y, x int, label string) *node {
 
@@ -83,6 +92,8 @@ func (g *GOL) buildNode(level int, size int, y, x int, label string) *node {
 			i++
 		}
 	}
+
+	cache[children]++
 
 	return newNode(children, level, size, label)
 }
@@ -122,6 +133,8 @@ func (g *GOL) buildLeafs(y, x int) nodeChildren {
 			i++
 		}
 	}
+
+	cache[children]++
 
 	return children
 }

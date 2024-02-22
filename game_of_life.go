@@ -112,3 +112,208 @@ func (g *GOL) prevGeneration() {
 	g.history[len(g.history)-1] = nil
 	g.history = g.history[:len(g.history)-1]
 }
+
+////////////////////// tree base
+
+type evolveResult = *node
+
+func evolve(n *node) evolveResult {
+
+	if n.level == 3 {
+		return evolveGol(n)
+	}
+
+	a1 := newNode(nodeChildren{
+		n.children.nw.children.nw.children.se,
+		n.children.nw.children.ne.children.sw,
+		n.children.nw.children.sw.children.ne,
+		n.children.nw.children.se.children.nw,
+	}, n.level-1, n.size/2, "a1")
+
+	a2 := newNode(nodeChildren{
+		n.children.nw.children.ne.children.se,
+		n.children.ne.children.nw.children.sw,
+		n.children.nw.children.se.children.sw,
+		n.children.ne.children.sw.children.nw,
+	}, n.level-1, n.size/2, "a2")
+
+	a3 := newNode(nodeChildren{
+		n.children.ne.children.nw.children.se,
+		n.children.ne.children.ne.children.sw,
+		n.children.ne.children.sw.children.ne,
+		n.children.ne.children.se.children.nw,
+	}, n.level-1, n.size/2, "a3")
+
+	a4 := newNode(nodeChildren{
+		n.children.nw.children.sw.children.se,
+		n.children.nw.children.se.children.sw,
+		n.children.sw.children.nw.children.ne,
+		n.children.sw.children.ne.children.nw,
+	}, n.level-1, n.size/2, "a4")
+
+	a5 := newNode(nodeChildren{
+		n.children.nw.children.se.children.se,
+		n.children.ne.children.sw.children.sw,
+		n.children.sw.children.ne.children.ne,
+		n.children.se.children.nw.children.nw,
+	}, n.level-1, n.size/2, "a5")
+
+	a6 := newNode(nodeChildren{
+		n.children.ne.children.sw.children.se,
+		n.children.ne.children.se.children.sw,
+		n.children.se.children.nw.children.ne,
+		n.children.se.children.ne.children.nw,
+	}, n.level-1, n.size/2, "a6")
+
+	a7 := newNode(nodeChildren{
+		n.children.sw.children.nw.children.se,
+		n.children.sw.children.ne.children.sw,
+		n.children.sw.children.sw.children.ne,
+		n.children.sw.children.se.children.nw,
+	}, n.level-1, n.size/2, "a7")
+
+	a8 := newNode(nodeChildren{
+		n.children.sw.children.ne.children.se,
+		n.children.se.children.nw.children.sw,
+		n.children.sw.children.se.children.ne,
+		n.children.se.children.sw.children.nw,
+	}, n.level-1, n.size/2, "a8")
+
+	a9 := newNode(nodeChildren{
+		n.children.se.children.nw.children.se,
+		n.children.se.children.ne.children.sw,
+		n.children.se.children.sw.children.se,
+		n.children.se.children.se.children.nw,
+	}, n.level-1, n.size/2, "a9")
+
+	r1 := evolve(a1)
+	r2 := evolve(a2)
+	r3 := evolve(a3)
+	r4 := evolve(a4)
+	r5 := evolve(a5)
+	r6 := evolve(a6)
+	r7 := evolve(a7)
+	r8 := evolve(a8)
+	r9 := evolve(a9)
+
+	res1 := assembleCenterNode(r1, r2, r4, r5)
+	res2 := assembleCenterNode(r2, r3, r5, r6)
+	res3 := assembleCenterNode(r4, r5, r7, r8)
+	res4 := assembleCenterNode(r5, r6, r8, r9)
+
+	center := assembleCenterNode(
+		evolve(res1),
+		evolve(res2),
+		evolve(res3),
+		evolve(res4),
+	)
+
+	return center
+}
+
+var stateToCell = map[cellState]*node{deadCell: deadLeaf, aliveCell: aliveLeaf}
+
+func evolveGol(n *node) evolveResult {
+
+	var nw, ne, sw, se *node
+
+	aliveNeighbours := 0
+	for _, v := range []*node{
+		n.children.nw.children.nw,
+		n.children.nw.children.ne,
+		n.children.ne.children.nw,
+
+		n.children.nw.children.sw,
+		n.children.ne.children.sw,
+
+		n.children.sw.children.nw,
+		n.children.sw.children.ne,
+		n.children.se.children.nw,
+	} {
+		if v.state == aliveCell {
+			aliveNeighbours++
+		}
+	}
+	nw = stateToCell[getNextGenerationState(aliveNeighbours, n.children.nw.children.se.state)]
+
+	aliveNeighbours = 0
+	for _, v := range []*node{
+		n.children.nw.children.ne,
+		n.children.ne.children.nw,
+		n.children.ne.children.ne,
+
+		n.children.nw.children.se,
+		n.children.ne.children.se,
+
+		n.children.sw.children.ne,
+		n.children.se.children.nw,
+		n.children.se.children.ne,
+	} {
+		if v.state == aliveCell {
+			aliveNeighbours++
+		}
+	}
+	ne = stateToCell[getNextGenerationState(aliveNeighbours, n.children.ne.children.sw.state)]
+
+	aliveNeighbours = 0
+	for _, v := range []*node{
+		n.children.nw.children.sw,
+		n.children.nw.children.se,
+		n.children.ne.children.sw,
+
+		n.children.sw.children.nw,
+		n.children.ne.children.nw,
+
+		n.children.sw.children.sw,
+		n.children.sw.children.se,
+		n.children.se.children.sw,
+	} {
+		if v.state == aliveCell {
+			aliveNeighbours++
+		}
+	}
+	sw = stateToCell[getNextGenerationState(aliveNeighbours, n.children.sw.children.ne.state)]
+
+	aliveNeighbours = 0
+	for _, v := range []*node{
+		n.children.nw.children.se,
+		n.children.ne.children.sw,
+		n.children.ne.children.se,
+
+		n.children.sw.children.ne,
+		n.children.se.children.ne,
+
+		n.children.sw.children.se,
+		n.children.se.children.sw,
+		n.children.se.children.se,
+	} {
+		if v.state == aliveCell {
+			aliveNeighbours++
+		}
+	}
+	se = stateToCell[getNextGenerationState(aliveNeighbours, n.children.se.children.nw.state)]
+
+	children := nodeChildren{nw, ne, sw, se}
+
+	return newNode(children, n.level-1, n.size/2, "center from leaves of: "+n.label)
+}
+
+func assembleCenterNode(nw, ne, sw, se evolveResult) evolveResult {
+	children := nodeChildren{nw, ne, sw, se}
+
+	n := newNode(children, nw.level+1, 2*nw.size, "center")
+
+	return n
+
+}
+
+func getCenterNode(n *node) *node {
+	children := nodeChildren{
+		n.children.nw.children.se,
+		n.children.ne.children.sw,
+		n.children.sw.children.ne,
+		n.children.se.children.nw,
+	}
+
+	return newNode(children, n.level-1, n.size/2, "center of "+n.label)
+}
