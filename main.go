@@ -30,13 +30,24 @@ func main() {
 	}
 
 	fmt.Println()
+
 	g.dumpTreeRecursive()
+	n := generateCanonical0(g.root.level)
+	g.root = n
+	fmt.Println()
+	fmt.Println()
+	g.dumpTreeRecursive()
+	fmt.Println()
+	fmt.Println()
+	g.root = addBorder(g.root) // we got root node with level 6 but we are missing level 5.
+	g.dumpTreeRecursive()
+	fmt.Println()
 
-	evolve(g.root)
-
+	// evolve(g.root)
 	// return
-
 	// g.dump()
+
+	// g.dumpTreeRecursive()
 	// goLife(g)
 }
 
@@ -49,15 +60,16 @@ func goLife(g *GOL) {
 		switch action {
 		case exit:
 			close(actionStream)
-			break
 		case next:
 			i++
-			fmt.Printf("\n%d", i)
-			g.nextGeneration()
-			g.dump()
+			fmt.Printf("\n%d\n", i)
+			// g.nextGeneration()
+			g.root = evolve(g.root)
+			g.dumpTreeRecursive()
 		case previous:
-			g.prevGeneration()
-			g.dump()
+			fmt.Printf("\n prev is not supported using tree")
+			// g.prevGeneration()
+			// g.dump()
 
 		default:
 		}
@@ -68,7 +80,7 @@ func goLife(g *GOL) {
 func readInput(action chan<- controlAction) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Printf("\nwaiting for key: (wsad): ")
+		fmt.Printf("\nwaiting for key: (wsad): \n")
 
 		b, err := reader.ReadBytes('\n')
 		if err != nil {

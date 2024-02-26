@@ -55,10 +55,10 @@ func setPatternsFromFile(fn string, g *GOL) {
 			panic(fmt.Sprintf("\nempty pattern, line: %d", i))
 		}
 
-		pattern := make([][]byte, i-patternStartLine, i-patternStartLine)
-		for w, pline := range patterData[patternStartLine:i] {
-			pattern[w] = make([]byte, len(pline), len(pline))
-			for u, cell := range pline {
+		pattern := make([][]byte, i-patternStartLine)
+		for w, pLine := range patterData[patternStartLine:i] {
+			pattern[w] = make([]byte, len(pLine))
+			for u, cell := range pLine {
 				if cell == printableAliveCell {
 					pattern[w][u] = aliveCell
 				} else if cell == printableDeadCell {
@@ -146,8 +146,8 @@ func setPattern(pattern [][]byte, startPos point, g *GOL) {
 
 	y := startPos.y
 	x := startPos.x
-	for i, pline := range pattern {
-		copy(g.grid[y+i][x:x+len(pline)], pline)
+	for i, pLine := range pattern {
+		copy(g.grid[y+i][x:x+len(pLine)], pLine)
 	}
 }
 
@@ -159,8 +159,8 @@ func setGridFromFile(fn string, g *GOL) {
 		panic(fmt.Errorf("input file: %w", err))
 	}
 
-	grid := golGrid(bytes.Split(b, []byte{'\n'}))
-	grid = make(golGrid, 0, 8)
+	// grid := golGrid(bytes.Split(b, []byte{'\n'}))
+	grid := make(golGrid, 0, 8)
 
 	grid = append(grid, make([]byte, 0, 8))
 	i := 0
@@ -204,14 +204,14 @@ func setGridFromFile(fn string, g *GOL) {
 
 	if gridSize > len(grid) {
 		oldGrid := grid
-		grid = make(golGrid, gridSize, gridSize)
+		grid = make(golGrid, gridSize)
 		copy(grid, oldGrid)
 	}
 
 	for y := 0; y < gridSize; y++ {
 		if len(grid[y]) < gridSize {
 			row := grid[y]
-			grid[y] = make([]byte, gridSize, gridSize)
+			grid[y] = make([]byte, gridSize)
 			copy(grid[y], row)
 		}
 	}

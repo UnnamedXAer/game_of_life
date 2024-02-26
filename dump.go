@@ -11,7 +11,7 @@ const printableDeadCell cellState = '.'
 func (g *GOL) dump() {
 	sb := strings.Builder{}
 
-	border := make([]byte, g.gridSize+2, g.gridSize+2)
+	border := make([]byte, g.gridSize+2)
 	i := 0
 	border[i] = '|'
 	for i++; i < g.gridSize+1; i++ {
@@ -58,9 +58,9 @@ func (g *GOL) dumpTreeRecHelper(n *node, grid [][]byte, y, x int) {
 }
 
 func (g *GOL) dumpTreeRecursive() {
-	printableGrid := make([][]byte, g.gridSize, g.gridSize)
+	printableGrid := make([][]byte, g.gridSize)
 	for i := 0; i < g.gridSize; i++ {
-		printableGrid[i] = make([]byte, g.gridSize, g.gridSize)
+		printableGrid[i] = make([]byte, g.gridSize)
 	}
 	g.dumpTreeRecHelper(g.root, printableGrid, 0, 0)
 

@@ -19,3 +19,6 @@
 
 # Go workspace file
 go.work
+
+game_of_life
+__debug_bin*

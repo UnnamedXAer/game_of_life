@@ -23,12 +23,12 @@ type GOL struct {
 func newGOL(n int) *GOL {
 	g := GOL{
 		gridSize: n,
-		grid:     make(golGrid, n, n),
+		grid:     make(golGrid, n),
 		history:  make([]golGrid, 0, 10),
 	}
 
 	for i := 0; i < n; i++ {
-		g.grid[i] = make([]byte, n, n)
+		g.grid[i] = make([]byte, n)
 	}
 
 	return &g
@@ -36,7 +36,7 @@ func newGOL(n int) *GOL {
 
 func (g *GOL) nextGeneration() {
 
-	grid := make(golGrid, g.gridSize, g.gridSize)
+	grid := make(golGrid, g.gridSize)
 	for i, v := range g.grid {
 		grid[i] = make([]byte, g.gridSize)
 		copy(grid[i], v)
@@ -119,7 +119,7 @@ type evolveResult = *node
 
 func evolve(n *node) evolveResult {
 
-	if n.level == 3 {
+	if n.level == 4 {
 		return evolveGol(n)
 	}
 
@@ -133,7 +133,7 @@ func evolve(n *node) evolveResult {
 	a2 := newNode(nodeChildren{
 		n.children.nw.children.ne.children.se,
 		n.children.ne.children.nw.children.sw,
-		n.children.nw.children.se.children.sw,
+		n.children.nw.children.se.children.ne,
 		n.children.ne.children.sw.children.nw,
 	}, n.level-1, n.size/2, "a2")
 
@@ -182,7 +182,7 @@ func evolve(n *node) evolveResult {
 	a9 := newNode(nodeChildren{
 		n.children.se.children.nw.children.se,
 		n.children.se.children.ne.children.sw,
-		n.children.se.children.sw.children.se,
+		n.children.se.children.sw.children.ne,
 		n.children.se.children.se.children.nw,
 	}, n.level-1, n.size/2, "a9")
 
@@ -202,11 +202,17 @@ func evolve(n *node) evolveResult {
 	res4 := assembleCenterNode(r5, r6, r8, r9)
 
 	center := assembleCenterNode(
-		evolve(res1),
-		evolve(res2),
-		evolve(res3),
-		evolve(res4),
+		getCenterNode(res1),
+		getCenterNode(res2),
+		getCenterNode(res3),
+		getCenterNode(res4),
 	)
+	// center := assembleCenterNode(
+	// 	evolve(res1),
+	// 	evolve(res2),
+	// 	evolve(res3),
+	// 	evolve(res4),
+	// )
 
 	return center
 }
@@ -296,6 +302,40 @@ func evolveGol(n *node) evolveResult {
 	children := nodeChildren{nw, ne, sw, se}
 
 	return newNode(children, n.level-1, n.size/2, "center from leaves of: "+n.label)
+}
+
+func generateCanonical0(level int) *node {
+	if level == 0 {
+		return nil
+	}
+
+	n := deadLeaf
+	for i := 2; i <= level; i++ {
+		n = newNode(nodeChildren{n, n, n, n}, i, n.size*2, fmt.Sprintf("canonical0 at depth: %d", i))
+	}
+
+	return n
+}
+
+func addBorder(n *node) *node {
+	level := n.level
+
+	nodeBorder := generateCanonical0(level - 1)
+
+	nw := newNode(nodeChildren{
+		nodeBorder, nodeBorder, nodeBorder, n.children.nw,
+	}, level-1, n.size/2, fmt.Sprintf("nw - border node of level %d", level))
+	ne := newNode(nodeChildren{
+		nodeBorder, nodeBorder, n.children.ne, nodeBorder,
+	}, level-1, n.size/2, fmt.Sprintf("ne - border node of level %d", level))
+	sw := newNode(nodeChildren{
+		nodeBorder, n.children.sw, nodeBorder, nodeBorder,
+	}, level-1, n.size/2, fmt.Sprintf("sw - border node of level %d", level))
+	se := newNode(nodeChildren{
+		n.children.se, nodeBorder, nodeBorder, nodeBorder,
+	}, level-1, n.size/2, fmt.Sprintf("se - border node of level %d", level))
+
+	return newNode(nodeChildren{nw, ne, sw, se}, level+1, n.size*2, fmt.Sprintf("bordered node at level: %d", level+1))
 }
 
 func assembleCenterNode(nw, ne, sw, se evolveResult) evolveResult {
