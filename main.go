@@ -33,19 +33,23 @@ func main() {
 
 	g.dumpTreeRecursive()
 	n := generateCanonical0(g.root.level)
+	oldRoot := g.root
 	g.root = n
+	g.gridSize = g.root.size
 	fmt.Println()
 	fmt.Println()
 	g.dumpTreeRecursive()
+	g.root = oldRoot
+	g.gridSize = g.root.size
 	fmt.Println()
 	fmt.Println()
 	g.root = addBorder(g.root) // we got root node with level 6 but we are missing level 5.
+	g.gridSize = g.root.size
 	g.dumpTreeRecursive()
 	fmt.Println()
-
-	// evolve(g.root)
+	evolve(g.root)
 	// return
-	// g.dump()
+	g.dumpTreeRecursive()
 
 	// g.dumpTreeRecursive()
 	// goLife(g)

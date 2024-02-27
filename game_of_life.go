@@ -224,7 +224,7 @@ func evolveGol(n *node) evolveResult {
 	var nw, ne, sw, se *node
 
 	aliveNeighbours := 0
-	for _, v := range []*node{
+	for _, neighbour := range []*node{
 		n.children.nw.children.nw,
 		n.children.nw.children.ne,
 		n.children.ne.children.nw,
@@ -236,14 +236,14 @@ func evolveGol(n *node) evolveResult {
 		n.children.sw.children.ne,
 		n.children.se.children.nw,
 	} {
-		if v.state == aliveCell {
+		if neighbour.state == aliveCell {
 			aliveNeighbours++
 		}
 	}
 	nw = stateToCell[getNextGenerationState(aliveNeighbours, n.children.nw.children.se.state)]
 
 	aliveNeighbours = 0
-	for _, v := range []*node{
+	for _, neighbour := range []*node{
 		n.children.nw.children.ne,
 		n.children.ne.children.nw,
 		n.children.ne.children.ne,
@@ -255,14 +255,14 @@ func evolveGol(n *node) evolveResult {
 		n.children.se.children.nw,
 		n.children.se.children.ne,
 	} {
-		if v.state == aliveCell {
+		if neighbour.state == aliveCell {
 			aliveNeighbours++
 		}
 	}
 	ne = stateToCell[getNextGenerationState(aliveNeighbours, n.children.ne.children.sw.state)]
 
 	aliveNeighbours = 0
-	for _, v := range []*node{
+	for _, neighbour := range []*node{
 		n.children.nw.children.sw,
 		n.children.nw.children.se,
 		n.children.ne.children.sw,
@@ -274,14 +274,14 @@ func evolveGol(n *node) evolveResult {
 		n.children.sw.children.se,
 		n.children.se.children.sw,
 	} {
-		if v.state == aliveCell {
+		if neighbour.state == aliveCell {
 			aliveNeighbours++
 		}
 	}
 	sw = stateToCell[getNextGenerationState(aliveNeighbours, n.children.sw.children.ne.state)]
 
 	aliveNeighbours = 0
-	for _, v := range []*node{
+	for _, neighbour := range []*node{
 		n.children.nw.children.se,
 		n.children.ne.children.sw,
 		n.children.ne.children.se,
@@ -293,7 +293,7 @@ func evolveGol(n *node) evolveResult {
 		n.children.se.children.sw,
 		n.children.se.children.se,
 	} {
-		if v.state == aliveCell {
+		if neighbour.state == aliveCell {
 			aliveNeighbours++
 		}
 	}
@@ -311,7 +311,7 @@ func generateCanonical0(level int) *node {
 
 	n := deadLeaf
 	for i := 2; i <= level; i++ {
-		n = newNode(nodeChildren{n, n, n, n}, i, n.size*2, fmt.Sprintf("canonical0 at depth: %d", i))
+		n = newNode(nodeChildren{n, n, n, n}, n.level+1, n.size*2, fmt.Sprintf("canonical0 at depth: %d", n.level+1))
 	}
 
 	return n
@@ -324,16 +324,16 @@ func addBorder(n *node) *node {
 
 	nw := newNode(nodeChildren{
 		nodeBorder, nodeBorder, nodeBorder, n.children.nw,
-	}, level-1, n.size/2, fmt.Sprintf("nw - border node of level %d", level))
+	}, level, n.size, fmt.Sprintf("nw - border node of level %d", level))
 	ne := newNode(nodeChildren{
 		nodeBorder, nodeBorder, n.children.ne, nodeBorder,
-	}, level-1, n.size/2, fmt.Sprintf("ne - border node of level %d", level))
+	}, level, n.size, fmt.Sprintf("ne - border node of level %d", level))
 	sw := newNode(nodeChildren{
 		nodeBorder, n.children.sw, nodeBorder, nodeBorder,
-	}, level-1, n.size/2, fmt.Sprintf("sw - border node of level %d", level))
+	}, level, n.size, fmt.Sprintf("sw - border node of level %d", level))
 	se := newNode(nodeChildren{
 		n.children.se, nodeBorder, nodeBorder, nodeBorder,
-	}, level-1, n.size/2, fmt.Sprintf("se - border node of level %d", level))
+	}, level, n.size, fmt.Sprintf("se - border node of level %d", level))
 
 	return newNode(nodeChildren{nw, ne, sw, se}, level+1, n.size*2, fmt.Sprintf("bordered node at level: %d", level+1))
 }
