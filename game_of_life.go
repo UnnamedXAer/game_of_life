@@ -83,7 +83,6 @@ func (g *GOL) countAliveNeighbours(y int, x int) int {
 
 	yyStart := max(0, y-1)
 	yyEnd := min(g.gridSize, y+2)
-
 	xxStart := max(0, x-1)
 	xxEnd := min(g.gridSize, x+2)
 
@@ -119,71 +118,71 @@ type evolveResult = *node
 
 func evolve(n *node) evolveResult {
 
-	if n.level == 4 {
+	if n.level == 3 {
 		return evolveGol(n)
 	}
 
 	a1 := newNode(nodeChildren{
-		n.children.nw.children.nw.children.se,
-		n.children.nw.children.ne.children.sw,
-		n.children.nw.children.sw.children.ne,
-		n.children.nw.children.se.children.nw,
+		n.children.nw.children.nw,
+		n.children.nw.children.ne,
+		n.children.nw.children.sw,
+		n.children.nw.children.se,
 	}, n.level-1, n.size/2, "a1")
 
 	a2 := newNode(nodeChildren{
-		n.children.nw.children.ne.children.se,
-		n.children.ne.children.nw.children.sw,
-		n.children.nw.children.se.children.ne,
-		n.children.ne.children.sw.children.nw,
+		n.children.nw.children.ne,
+		n.children.ne.children.nw,
+		n.children.nw.children.se,
+		n.children.ne.children.sw,
 	}, n.level-1, n.size/2, "a2")
 
 	a3 := newNode(nodeChildren{
-		n.children.ne.children.nw.children.se,
-		n.children.ne.children.ne.children.sw,
-		n.children.ne.children.sw.children.ne,
-		n.children.ne.children.se.children.nw,
+		n.children.ne.children.nw,
+		n.children.ne.children.ne,
+		n.children.ne.children.sw,
+		n.children.ne.children.se,
 	}, n.level-1, n.size/2, "a3")
 
 	a4 := newNode(nodeChildren{
-		n.children.nw.children.sw.children.se,
-		n.children.nw.children.se.children.sw,
-		n.children.sw.children.nw.children.ne,
-		n.children.sw.children.ne.children.nw,
+		n.children.nw.children.sw,
+		n.children.nw.children.se,
+		n.children.sw.children.nw,
+		n.children.sw.children.ne,
 	}, n.level-1, n.size/2, "a4")
 
 	a5 := newNode(nodeChildren{
-		n.children.nw.children.se.children.se,
-		n.children.ne.children.sw.children.sw,
-		n.children.sw.children.ne.children.ne,
-		n.children.se.children.nw.children.nw,
+		n.children.nw.children.se,
+		n.children.ne.children.sw,
+		n.children.sw.children.ne,
+		n.children.se.children.nw,
 	}, n.level-1, n.size/2, "a5")
 
 	a6 := newNode(nodeChildren{
-		n.children.ne.children.sw.children.se,
-		n.children.ne.children.se.children.sw,
-		n.children.se.children.nw.children.ne,
-		n.children.se.children.ne.children.nw,
+		n.children.ne.children.sw,
+		n.children.ne.children.se,
+		n.children.se.children.nw,
+		n.children.se.children.ne,
 	}, n.level-1, n.size/2, "a6")
 
 	a7 := newNode(nodeChildren{
-		n.children.sw.children.nw.children.se,
-		n.children.sw.children.ne.children.sw,
-		n.children.sw.children.sw.children.ne,
-		n.children.sw.children.se.children.nw,
+		n.children.sw.children.nw,
+		n.children.sw.children.ne,
+		n.children.sw.children.sw,
+		n.children.sw.children.se,
 	}, n.level-1, n.size/2, "a7")
 
 	a8 := newNode(nodeChildren{
-		n.children.sw.children.ne.children.se,
-		n.children.se.children.nw.children.sw,
-		n.children.sw.children.se.children.ne,
-		n.children.se.children.sw.children.nw,
+		n.children.sw.children.ne,
+		n.children.se.children.nw,
+		n.children.sw.children.se,
+		n.children.se.children.sw,
 	}, n.level-1, n.size/2, "a8")
 
 	a9 := newNode(nodeChildren{
-		n.children.se.children.nw.children.se,
-		n.children.se.children.ne.children.sw,
-		n.children.se.children.sw.children.ne,
-		n.children.se.children.se.children.nw,
+		n.children.se.children.nw,
+		n.children.se.children.ne,
+		n.children.se.children.sw,
+		n.children.se.children.se,
 	}, n.level-1, n.size/2, "a9")
 
 	r1 := evolve(a1)

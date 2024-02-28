@@ -15,6 +15,7 @@ const (
 	next     controlAction = 'n'
 	previous controlAction = 'p'
 	exit     controlAction = 'e'
+	nothing  controlAction = 0
 )
 
 func main() {
@@ -30,60 +31,50 @@ func main() {
 	}
 
 	fmt.Println()
+	g.root = addBorder(g.root)
+	g.gridSize = g.root.size
 
 	g.dumpTreeRecursive()
-	n := generateCanonical0(g.root.level)
-	oldRoot := g.root
-	g.root = n
-	g.gridSize = g.root.size
-	fmt.Println()
-	fmt.Println()
-	g.dumpTreeRecursive()
-	g.root = oldRoot
-	g.gridSize = g.root.size
-	fmt.Println()
-	fmt.Println()
-	g.root = addBorder(g.root) // we got root node with level 6 but we are missing level 5.
-	g.gridSize = g.root.size
-	g.dumpTreeRecursive()
-	fmt.Println()
-	evolve(g.root)
-	// return
-	g.dumpTreeRecursive()
-
-	// g.dumpTreeRecursive()
-	// goLife(g)
+	goLife(g)
 }
 
 func goLife(g *GOL) {
 	actionStream := make(chan controlAction)
-	go readInput(actionStream)
+	proceed := make(chan bool)
+	go readInput(actionStream, proceed)
+	proceed <- true
 
 	i := 0
 	for action := range actionStream {
 		switch action {
 		case exit:
 			close(actionStream)
+			proceed <- false
+			close(proceed)
 		case next:
 			i++
 			fmt.Printf("\n%d\n", i)
 			// g.nextGeneration()
-			g.root = evolve(g.root)
+			g.root = evolve(addBorder(g.root))
 			g.dumpTreeRecursive()
+			proceed <- true
 		case previous:
 			fmt.Printf("\n prev is not supported using tree")
 			// g.prevGeneration()
 			// g.dump()
-
+			proceed <- true
+		case nothing:
+			proceed <- true
 		default:
+			fmt.Printf("unsupported action: %v", action)
+			proceed <- true
 		}
-
 	}
 }
 
-func readInput(action chan<- controlAction) {
+func readInput(action chan<- controlAction, proceed chan bool) {
 	reader := bufio.NewReader(os.Stdin)
-	for {
+	for <-proceed {
 		fmt.Printf("\nwaiting for key: (wsad): \n")
 
 		b, err := reader.ReadBytes('\n')
@@ -98,7 +89,7 @@ func readInput(action chan<- controlAction) {
 		}
 		if len(b) == 0 {
 			fmt.Printf("\n read nothing")
-			continue
+			action <- nothing
 		}
 
 		input := b[0]
@@ -118,6 +109,7 @@ func readInput(action chan<- controlAction) {
 		}
 
 		fmt.Printf("\n u pressed something that doesn't make sense :). key: %v ,%q", input, string(input))
+		action <- nothing
 	}
 
 }
