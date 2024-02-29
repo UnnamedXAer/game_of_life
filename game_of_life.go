@@ -244,18 +244,23 @@ func evolve(n *node) evolveResult {
 	res3 := assembleCenterNode(r4, r5, r7, r8)
 	res4 := assembleCenterNode(r5, r6, r8, r9)
 
-	center := assembleCenterNode(
-		getCenterNode(res1),
-		getCenterNode(res2),
-		getCenterNode(res3),
-		getCenterNode(res4),
-	)
-	// center := assembleCenterNode(
-	// 	evolve(res1),
-	// 	evolve(res2),
-	// 	evolve(res3),
-	// 	evolve(res4),
-	// )
+	var center *node
+	fastforward := false
+	if fastforward {
+		center = assembleCenterNode(
+			evolve(res1),
+			evolve(res2),
+			evolve(res3),
+			evolve(res4),
+		)
+	} else {
+		center = assembleCenterNode(
+			getCenterNode(res1),
+			getCenterNode(res2),
+			getCenterNode(res3),
+			getCenterNode(res4),
+		)
+	}
 
 	return center
 }
@@ -348,7 +353,7 @@ func convertAuxMatrixToNode(m [6][6]cellState) *node {
 	}
 
 	n := newNode(children, 3, 4, "from matrix")
-	n = getCenterNode(n)
+	n = getCenterNode(n) // could we just compose the center ourself?
 
 	return n
 }
@@ -358,90 +363,6 @@ func evolveGol(n *node) evolveResult {
 	mNext := nextGeneration(m)
 	nextGenNode := convertAuxMatrixToNode(mNext)
 	return nextGenNode
-	// return nextGenNode
-
-	fmt.Printf("\nnode: %+v", nextGenNode)
-
-	var nw, ne, sw, se *node
-	aliveNeighbours := 0
-	for _, neighbour := range []*node{
-		n.children.nw.children.nw,
-		n.children.nw.children.ne,
-		n.children.ne.children.nw,
-
-		n.children.nw.children.sw,
-		n.children.ne.children.sw,
-
-		n.children.sw.children.nw,
-		n.children.sw.children.ne,
-		n.children.se.children.nw,
-	} {
-		if neighbour.state == aliveCell {
-			aliveNeighbours++
-		}
-	}
-	nw = stateToCell[getNextGenerationState(aliveNeighbours, n.children.nw.children.se.state)]
-
-	aliveNeighbours = 0
-	for _, neighbour := range []*node{
-		n.children.nw.children.ne,
-		n.children.ne.children.nw,
-		n.children.ne.children.ne,
-
-		n.children.nw.children.se,
-		n.children.ne.children.se,
-
-		n.children.sw.children.ne,
-		n.children.se.children.nw,
-		n.children.se.children.ne,
-	} {
-		if neighbour.state == aliveCell {
-			aliveNeighbours++
-		}
-	}
-	ne = stateToCell[getNextGenerationState(aliveNeighbours, n.children.ne.children.sw.state)]
-
-	aliveNeighbours = 0
-	for _, neighbour := range []*node{
-		n.children.nw.children.sw,
-		n.children.nw.children.se,
-		n.children.ne.children.sw,
-
-		n.children.sw.children.nw,
-		n.children.ne.children.nw,
-
-		n.children.sw.children.sw,
-		n.children.sw.children.se,
-		n.children.se.children.sw,
-	} {
-		if neighbour.state == aliveCell {
-			aliveNeighbours++
-		}
-	}
-	sw = stateToCell[getNextGenerationState(aliveNeighbours, n.children.sw.children.ne.state)]
-
-	aliveNeighbours = 0
-	for _, neighbour := range []*node{
-		n.children.nw.children.se,
-		n.children.ne.children.sw,
-		n.children.ne.children.se,
-
-		n.children.sw.children.ne,
-		n.children.se.children.ne,
-
-		n.children.sw.children.se,
-		n.children.se.children.sw,
-		n.children.se.children.se,
-	} {
-		if neighbour.state == aliveCell {
-			aliveNeighbours++
-		}
-	}
-	se = stateToCell[getNextGenerationState(aliveNeighbours, n.children.se.children.nw.state)]
-
-	children := nodeChildren{nw, ne, sw, se}
-
-	return newNode(children, n.level-1, n.size/2, "center from leaves of: "+n.label)
 }
 
 func generateCanonical0(level int) *node {
