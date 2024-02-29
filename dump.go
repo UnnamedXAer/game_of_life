@@ -8,13 +8,14 @@ import (
 const printableAliveCell cellState = '@'
 const printableDeadCell cellState = '.'
 
-func (g *GOL) dump() {
+func dump(grid [][]cellState) {
 	sb := strings.Builder{}
 
-	border := make([]byte, g.gridSize+2)
+	gridSize := len(grid)
+	border := make([]byte, gridSize+2)
 	i := 0
 	border[i] = '|'
-	for i++; i < g.gridSize+1; i++ {
+	for i++; i < gridSize+1; i++ {
 		border[i] = '-'
 	}
 	border[i] = '|'
@@ -22,7 +23,7 @@ func (g *GOL) dump() {
 	sb.WriteByte('\n')
 	sb.Write(border)
 
-	for _, row := range g.grid {
+	for _, row := range grid {
 		sb.WriteByte('\n')
 		sb.WriteByte('|')
 		for _, cell := range row {
@@ -41,7 +42,11 @@ func (g *GOL) dump() {
 	fmt.Print(sb.String())
 }
 
-func (g *GOL) dumpTreeRecHelper(n *node, grid [][]byte, y, x int) {
+func (g *GOL) dump() {
+	dump(g.grid)
+}
+
+func dumpTreeRecHelper(n *node, grid [][]byte, y, x int) {
 	if n.level == 1 {
 		if n.state == aliveCell {
 			grid[y][x] = printableAliveCell
@@ -51,96 +56,29 @@ func (g *GOL) dumpTreeRecHelper(n *node, grid [][]byte, y, x int) {
 		return
 	}
 
-	g.dumpTreeRecHelper(n.children.nw, grid, y, x)
-	g.dumpTreeRecHelper(n.children.ne, grid, y, x+n.children.ne.size)
-	g.dumpTreeRecHelper(n.children.sw, grid, y+n.children.sw.size, x)
-	g.dumpTreeRecHelper(n.children.se, grid, y+n.children.se.size, x+n.children.se.size)
+	dumpTreeRecHelper(n.children.nw, grid, y, x)
+	dumpTreeRecHelper(n.children.ne, grid, y, x+n.children.ne.size)
+	dumpTreeRecHelper(n.children.sw, grid, y+n.children.sw.size, x)
+	dumpTreeRecHelper(n.children.se, grid, y+n.children.se.size, x+n.children.se.size)
 }
 
 func (g *GOL) dumpTreeRecursive() {
-	printableGrid := make([][]byte, g.gridSize)
-	for i := 0; i < g.gridSize; i++ {
-		printableGrid[i] = make([]byte, g.gridSize)
-	}
-	g.dumpTreeRecHelper(g.root, printableGrid, 0, 0)
+	dumpTreeRecursive(g.root)
+}
 
-	fmt.Println("|" + strings.Repeat("-", g.gridSize) + "|")
+func dumpTreeRecursive(n *node) {
+	gridSize := n.size
+	printableGrid := make([][]byte, gridSize)
+	for i := 0; i < gridSize; i++ {
+		printableGrid[i] = make([]byte, gridSize)
+	}
+	dumpTreeRecHelper(n, printableGrid, 0, 0)
+
+	fmt.Println("|" + strings.Repeat("-", gridSize) + "|")
 	for _, line := range printableGrid {
 		fmt.Println("|" + string(line) + "|")
 	}
-	fmt.Println("|" + strings.Repeat("-", g.gridSize) + "|")
-
-}
-
-func (g *GOL) dumpTree() {
-	panic("not implemented yet")
-	s := stack[*node]{
-		data: make([]*node, 0, g.gridSize),
-	}
-	q := queue[*node]{
-		data: make([]*node, 0, g.gridSize),
-	}
-
-	upDown := byte('U')
-
-	leafsCnt := 0
-
-	printing := make([]string, 0, g.gridSize*g.gridSize)
-
-	s.push(g.root)
-	for !s.isEmpty() || !q.isEmpty() {
-		if s.isEmpty() {
-			for !q.isEmpty() {
-				// the order after this operation is wrong, we are staring with last node of level 2
-				s.push(q.pop())
-			}
-		}
-
-		if leafsCnt == g.gridSize {
-			if upDown == 'U' {
-				upDown = 'D'
-			} else {
-				upDown = 'U'
-			}
-			leafsCnt = 0
-			fmt.Printf("\n")
-		}
-
-		// n := s.top()
-		n := s.pop()
-		if n.level == 1 {
-			leafsCnt++
-			b := printableDeadCell
-			if n.state == aliveCell {
-				b = printableAliveCell
-			}
-			idx := strings.IndexByte(n.label, '_')
-			printing = append(printing, n.label[idx:])
-			fmt.Print(string(b))
-			// s.pop()
-			continue
-		}
-
-		if upDown == 'U' {
-			s.push(n.children.ne)
-			s.push(n.children.nw)
-
-			q.push(n)
-			continue
-		}
-
-		// s.pop()
-
-		s.push(n.children.se)
-		s.push(n.children.sw)
-
-	}
-
-	for _, v := range printing {
-		fmt.Printf("\n%s", v)
-
-	}
-
+	fmt.Println("|" + strings.Repeat("-", gridSize) + "|")
 }
 
 type stack[T any] struct {

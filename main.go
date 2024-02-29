@@ -19,6 +19,7 @@ const (
 )
 
 func main() {
+
 	fmt.Printf("\nmain")
 
 	const gridSize int = 64
@@ -30,11 +31,8 @@ func main() {
 		setGridFromFile(os.Args[1], g)
 	}
 
-	fmt.Println()
-	g.root = addBorder(g.root)
-	g.gridSize = g.root.size
-
 	g.dumpTreeRecursive()
+	fmt.Println()
 	goLife(g)
 }
 
@@ -55,6 +53,9 @@ func goLife(g *GOL) {
 			i++
 			fmt.Printf("\n%d\n", i)
 			// g.nextGeneration()
+			g.root = addBorder(g.root)
+			g.gridSize = g.root.size
+
 			g.root = evolve(addBorder(g.root))
 			g.dumpTreeRecursive()
 			proceed <- true

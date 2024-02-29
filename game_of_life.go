@@ -37,7 +37,7 @@ func newGOL(n int) *GOL {
 func (g *GOL) nextGeneration() {
 
 	grid := make(golGrid, g.gridSize)
-	for i, v := range g.grid {
+	for i, v := range g.grid { // is this necessary?
 		grid[i] = make([]byte, g.gridSize)
 		copy(grid[i], v)
 	}
@@ -53,6 +53,50 @@ func (g *GOL) nextGeneration() {
 	g.history = append(g.history, g.grid)
 
 	g.grid = grid
+}
+
+func nextGeneration(m [6][6]cellState) [6][6]cellState {
+
+	const gridSize = 6
+	grid := [gridSize][gridSize]cellState{}
+
+	// for i, v := range m {
+	// 	copy(grid[i][:], v[:])
+	// }
+
+	for y := 0; y < gridSize; y++ {
+		for x := 0; x < gridSize; x++ {
+			c := m[y][x]
+			aliveNeighbours := countAliveNeighbours(m, y, x)
+			grid[y][x] = getNextGenerationState(aliveNeighbours, c)
+		}
+	}
+
+	return grid
+}
+
+func countAliveNeighbours(m [6][6]cellState, y int, x int) int {
+	const gridSize = 6
+
+	yyStart := max(0, y-1)
+	yyEnd := min(gridSize, y+2)
+	xxStart := max(0, x-1)
+	xxEnd := min(gridSize, x+2)
+
+	aliveNeighbours := 0
+
+	for yy := yyStart; yy < yyEnd; yy++ {
+		for xx := xxStart; xx < xxEnd; xx++ {
+			if y == yy && x == xx {
+				continue
+			}
+			if m[yy][xx] == aliveCell {
+				aliveNeighbours++
+			}
+		}
+	}
+
+	return aliveNeighbours
 }
 
 func getNextGenerationState(aliveNeighbours int, c cellState) cellState {
@@ -218,10 +262,107 @@ func evolve(n *node) evolveResult {
 
 var stateToCell = map[cellState]*node{deadCell: deadLeaf, aliveCell: aliveLeaf}
 
+func convertNodeToAuxMatrix(n *node) [6][6]cellState {
+
+	if n.level != 3 {
+		panic(fmt.Sprintf("\ncannot create 6x6 matrix from node at lvl: %d\n node: %+v", n.level, n))
+	}
+
+	m := [6][6]cellState{}
+
+	m[1][1] = n.children.nw.children.nw.state
+	m[1][2] = n.children.nw.children.ne.state
+	m[1][3] = n.children.ne.children.nw.state
+	m[1][4] = n.children.ne.children.ne.state
+
+	m[2][1] = n.children.nw.children.sw.state
+	m[2][2] = n.children.nw.children.se.state
+	m[2][3] = n.children.ne.children.sw.state
+	m[2][4] = n.children.ne.children.se.state
+
+	m[3][1] = n.children.sw.children.nw.state
+	m[3][2] = n.children.sw.children.ne.state
+	m[3][3] = n.children.se.children.nw.state
+	m[3][4] = n.children.se.children.ne.state
+
+	m[4][1] = n.children.sw.children.sw.state
+	m[4][2] = n.children.sw.children.se.state
+	m[4][3] = n.children.se.children.sw.state
+	m[4][4] = n.children.se.children.se.state
+
+	return m
+}
+
+func getCanonical(state cellState) *node {
+	if state == deadCell {
+		return deadLeaf
+	}
+	return aliveLeaf
+}
+
+func convertAuxMatrixToNode(m [6][6]cellState) *node {
+	children := nodeChildren{
+		newNode(nodeChildren{
+			getCanonical(m[1][1]),
+			getCanonical(m[1][2]),
+			getCanonical(m[2][1]),
+			getCanonical(m[2][2]),
+		},
+			2,
+			2,
+			"from matrix - nw",
+		),
+
+		newNode(nodeChildren{
+			getCanonical(m[1][3]),
+			getCanonical(m[1][4]),
+			getCanonical(m[2][3]),
+			getCanonical(m[2][4]),
+		},
+			2,
+			2,
+			"from matrix - ne",
+		),
+
+		newNode(nodeChildren{
+			getCanonical(m[3][1]),
+			getCanonical(m[3][2]),
+			getCanonical(m[4][1]),
+			getCanonical(m[4][2]),
+		},
+			2,
+			2,
+			"from matrix - sw",
+		),
+
+		newNode(nodeChildren{
+			getCanonical(m[3][3]),
+			getCanonical(m[3][4]),
+			getCanonical(m[4][3]),
+			getCanonical(m[4][4]),
+		},
+			2,
+			2,
+			"from matrix - se",
+		),
+	}
+
+	n := newNode(children, 3, 4, "from matrix")
+	n = getCenterNode(n)
+
+	return n
+}
+
 func evolveGol(n *node) evolveResult {
+	m := convertNodeToAuxMatrix(n)
+	mNext := nextGeneration(m)
+	nextGenNode := convertAuxMatrixToNode(mNext)
+	return nextGenNode
+	// return nextGenNode
+
+	fmt.Printf("\nnode: %+v", nextGenNode)
 
 	var nw, ne, sw, se *node
-
 	aliveNeighbours := 0
 	for _, neighbour := range []*node{
 		n.children.nw.children.nw,
