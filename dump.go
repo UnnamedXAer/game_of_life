@@ -43,6 +43,7 @@ func dump(grid [][]cellState) {
 }
 
 func (g *GOL) dump() {
+	fmt.Println()
 	dump(g.grid)
 }
 
@@ -63,7 +64,9 @@ func dumpTreeRecHelper(n *node, grid [][]byte, y, x int) {
 }
 
 func (g *GOL) dumpTreeRecursive() {
+	fmt.Println()
 	dumpTreeRecursive(g.root)
+	fmt.Printf("\ncache: %d", len(cache))
 }
 
 func dumpTreeRecursive(n *node) {

@@ -171,63 +171,63 @@ func evolve(n *node) evolveResult {
 		n.children.nw.children.ne,
 		n.children.nw.children.sw,
 		n.children.nw.children.se,
-	}, n.level-1, n.size/2, "a1")
+	}, n.level-1, n.size/2)
 
 	a2 := newNode(nodeChildren{
 		n.children.nw.children.ne,
 		n.children.ne.children.nw,
 		n.children.nw.children.se,
 		n.children.ne.children.sw,
-	}, n.level-1, n.size/2, "a2")
+	}, n.level-1, n.size/2)
 
 	a3 := newNode(nodeChildren{
 		n.children.ne.children.nw,
 		n.children.ne.children.ne,
 		n.children.ne.children.sw,
 		n.children.ne.children.se,
-	}, n.level-1, n.size/2, "a3")
+	}, n.level-1, n.size/2)
 
 	a4 := newNode(nodeChildren{
 		n.children.nw.children.sw,
 		n.children.nw.children.se,
 		n.children.sw.children.nw,
 		n.children.sw.children.ne,
-	}, n.level-1, n.size/2, "a4")
+	}, n.level-1, n.size/2)
 
 	a5 := newNode(nodeChildren{
 		n.children.nw.children.se,
 		n.children.ne.children.sw,
 		n.children.sw.children.ne,
 		n.children.se.children.nw,
-	}, n.level-1, n.size/2, "a5")
+	}, n.level-1, n.size/2)
 
 	a6 := newNode(nodeChildren{
 		n.children.ne.children.sw,
 		n.children.ne.children.se,
 		n.children.se.children.nw,
 		n.children.se.children.ne,
-	}, n.level-1, n.size/2, "a6")
+	}, n.level-1, n.size/2)
 
 	a7 := newNode(nodeChildren{
 		n.children.sw.children.nw,
 		n.children.sw.children.ne,
 		n.children.sw.children.sw,
 		n.children.sw.children.se,
-	}, n.level-1, n.size/2, "a7")
+	}, n.level-1, n.size/2)
 
 	a8 := newNode(nodeChildren{
 		n.children.sw.children.ne,
 		n.children.se.children.nw,
 		n.children.sw.children.se,
 		n.children.se.children.sw,
-	}, n.level-1, n.size/2, "a8")
+	}, n.level-1, n.size/2)
 
 	a9 := newNode(nodeChildren{
 		n.children.se.children.nw,
 		n.children.se.children.ne,
 		n.children.se.children.sw,
 		n.children.se.children.se,
-	}, n.level-1, n.size/2, "a9")
+	}, n.level-1, n.size/2)
 
 	r1 := evolve(a1)
 	r2 := evolve(a2)
@@ -315,7 +315,6 @@ func convertAuxMatrixToNode(m [6][6]cellState) *node {
 		},
 			2,
 			2,
-			"from matrix - nw",
 		),
 
 		newNode(nodeChildren{
@@ -326,7 +325,6 @@ func convertAuxMatrixToNode(m [6][6]cellState) *node {
 		},
 			2,
 			2,
-			"from matrix - ne",
 		),
 
 		newNode(nodeChildren{
@@ -337,7 +335,6 @@ func convertAuxMatrixToNode(m [6][6]cellState) *node {
 		},
 			2,
 			2,
-			"from matrix - sw",
 		),
 
 		newNode(nodeChildren{
@@ -348,11 +345,10 @@ func convertAuxMatrixToNode(m [6][6]cellState) *node {
 		},
 			2,
 			2,
-			"from matrix - se",
 		),
 	}
 
-	n := newNode(children, 3, 4, "from matrix")
+	n := newNode(children, 3, 4)
 	n = getCenterNode(n) // could we just compose the center ourself?
 
 	return n
@@ -372,7 +368,7 @@ func generateCanonical0(level int) *node {
 
 	n := deadLeaf
 	for i := 2; i <= level; i++ {
-		n = newNode(nodeChildren{n, n, n, n}, n.level+1, n.size*2, fmt.Sprintf("canonical0 at depth: %d", n.level+1))
+		n = newNode(nodeChildren{n, n, n, n}, n.level+1, n.size*2)
 	}
 
 	return n
@@ -385,27 +381,26 @@ func addBorder(n *node) *node {
 
 	nw := newNode(nodeChildren{
 		nodeBorder, nodeBorder, nodeBorder, n.children.nw,
-	}, level, n.size, fmt.Sprintf("nw - border node of level %d", level))
+	}, level, n.size)
 	ne := newNode(nodeChildren{
 		nodeBorder, nodeBorder, n.children.ne, nodeBorder,
-	}, level, n.size, fmt.Sprintf("ne - border node of level %d", level))
+	}, level, n.size)
 	sw := newNode(nodeChildren{
 		nodeBorder, n.children.sw, nodeBorder, nodeBorder,
-	}, level, n.size, fmt.Sprintf("sw - border node of level %d", level))
+	}, level, n.size)
 	se := newNode(nodeChildren{
 		n.children.se, nodeBorder, nodeBorder, nodeBorder,
-	}, level, n.size, fmt.Sprintf("se - border node of level %d", level))
+	}, level, n.size)
 
-	return newNode(nodeChildren{nw, ne, sw, se}, level+1, n.size*2, fmt.Sprintf("bordered node at level: %d", level+1))
+	return newNode(nodeChildren{nw, ne, sw, se}, level+1, n.size*2)
 }
 
 func assembleCenterNode(nw, ne, sw, se evolveResult) evolveResult {
 	children := nodeChildren{nw, ne, sw, se}
 
-	n := newNode(children, nw.level+1, 2*nw.size, "center")
+	n := newNode(children, nw.level+1, 2*nw.size)
 
 	return n
-
 }
 
 func getCenterNode(n *node) *node {
@@ -416,5 +411,5 @@ func getCenterNode(n *node) *node {
 		n.children.se.children.nw,
 	}
 
-	return newNode(children, n.level-1, n.size/2, "center of "+n.label)
+	return newNode(children, n.level-1, n.size/2)
 }

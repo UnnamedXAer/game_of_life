@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	// "runtime/pprof"
 )
 
 type controlAction byte
@@ -19,8 +20,21 @@ const (
 )
 
 func main() {
+	// Create a memory profile file
+	// memProfileFile, err := os.Create("mem.prof")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer memProfileFile.Close()
 
-	fmt.Printf("\nmain")
+	// Create a CPU profile file
+	// f, err := os.Create("profile.prof")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer f.Close()
+
+	fmt.Printf("\nmain\n")
 
 	const gridSize int = 64
 	g := newGOL(gridSize)
@@ -31,12 +45,30 @@ func main() {
 		setGridFromFile(os.Args[1], g)
 	}
 
-	g.dumpTreeRecursive()
-	fmt.Println()
+	// g.dumpTreeRecursive()
+	// fmt.Println()
 	goLife(g)
+
+	// Write memory profile to file
+	// if err := pprof.WriteHeapProfile(memProfileFile); err != nil {
+	// 	panic(err)
+	// }
+	fmt.Println("end of")
 }
 
 func goLife(g *GOL) {
+
+	for i := 0; i < 6; i++ {
+		fmt.Println(i)
+		g.root = addBorder(g.root)
+		g.gridSize = g.root.size
+
+		g.root = evolve(addBorder(g.root))
+		fmt.Println("done: ", i)
+	}
+
+	fmt.Println("out of loop, returning from goLife")
+	return
 	actionStream := make(chan controlAction)
 	proceed := make(chan bool)
 	go readInput(actionStream, proceed)
@@ -44,6 +76,11 @@ func goLife(g *GOL) {
 
 	i := 0
 	for action := range actionStream {
+		if i == 5 {
+			close(actionStream)
+			close(proceed)
+			break
+		}
 		switch action {
 		case exit:
 			close(actionStream)
