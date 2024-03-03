@@ -66,7 +66,7 @@ func dumpTreeRecHelper(n *node, grid [][]byte, y, x int) {
 func (g *GOL) dumpTreeRecursive() {
 	fmt.Println()
 	dumpTreeRecursive(g.root)
-	fmt.Printf("\ncache: %d", len(cache))
+	fmt.Printf("\ncached nodes: %4d, cached results: %4d", len(cacheNodes), len(cacheResults))
 }
 
 func dumpTreeRecursive(n *node) {

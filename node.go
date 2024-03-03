@@ -23,7 +23,7 @@ var (
 )
 
 func newNode(children nodeChildren, level int, size int) *node {
-	n, ok := cache[children]
+	n, ok := cacheNodes[children]
 	if ok {
 		// fmt.Printf("\ngot hit: %+v", n)
 		return n
@@ -43,7 +43,7 @@ func newNode(children nodeChildren, level int, size int) *node {
 		size:       size,
 	}
 
-	cache[children] = n
+	cacheNodes[children] = n
 
 	return n
 }
@@ -60,7 +60,7 @@ func (g *GOL) buildTree() {
 	g.root = g.buildNode(int(f)+1, g.gridSize, 0, 0)
 }
 
-var cache map[nodeChildren]*node = make(map[nodeChildren]*node, 100)
+var cacheNodes map[nodeChildren]*node = make(map[nodeChildren]*node, 0)
 
 func (g *GOL) buildNode(level int, size int, y, x int) *node {
 

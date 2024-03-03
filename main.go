@@ -5,7 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
+	"runtime/debug"
+	"runtime/pprof"
 	"strings"
 	// "runtime/pprof"
 )
@@ -20,19 +23,15 @@ const (
 )
 
 func main() {
-	// Create a memory profile file
-	// memProfileFile, err := os.Create("mem.prof")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer memProfileFile.Close()
+	debug.SetGCPercent(-1)
+	debug.SetMemoryLimit(math.MaxInt64)
 
-	// Create a CPU profile file
-	// f, err := os.Create("profile.prof")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer f.Close()
+	// Create a memory profile file
+	memProfileFile, err := os.Create("mem.prof")
+	if err != nil {
+		panic(err)
+	}
+	defer memProfileFile.Close()
 
 	fmt.Printf("\nmain\n")
 
@@ -50,22 +49,30 @@ func main() {
 	goLife(g)
 
 	// Write memory profile to file
-	// if err := pprof.WriteHeapProfile(memProfileFile); err != nil {
-	// 	panic(err)
-	// }
+	if err := pprof.WriteHeapProfile(memProfileFile); err != nil {
+		panic(err)
+	}
 	fmt.Println("end of")
 }
 
 func goLife(g *GOL) {
 
-	for i := 0; i < 6; i++ {
+	g.root = addBorder(g.root)
+	g.root = addBorder(g.root)
+	// g.root = addBorder(g.root)
+	// g.root = addBorder(g.root)
+	g.gridSize = g.root.size
+	for i := 0; i < 1154; i++ {
 		fmt.Println(i)
-		g.root = addBorder(g.root)
-		g.gridSize = g.root.size
+		// g.root = addBorder(g.root)
+		// g.gridSize = g.root.size
 
 		g.root = evolve(addBorder(g.root))
+		// g.dumpTreeRecursive()
+		// fmt.Println()
 		fmt.Println("done: ", i)
 	}
+	g.dumpTreeRecursive()
 
 	fmt.Println("out of loop, returning from goLife")
 	return

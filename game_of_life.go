@@ -160,10 +160,18 @@ func (g *GOL) prevGeneration() {
 
 type evolveResult = *node
 
+var cacheResults map[*node]evolveResult = make(map[*node]evolveResult, 0)
+
 func evolve(n *node) evolveResult {
+	r, ok := cacheResults[n]
+	if ok {
+		return r
+	}
 
 	if n.level == 3 {
-		return evolveGol(n)
+		r = evolveGol(n)
+		cacheResults[n] = r
+		return r
 	}
 
 	a1 := newNode(nodeChildren{
@@ -261,6 +269,8 @@ func evolve(n *node) evolveResult {
 			getCenterNode(res4),
 		)
 	}
+
+	cacheResults[n] = center
 
 	return center
 }

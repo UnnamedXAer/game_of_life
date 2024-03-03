@@ -21,6 +21,7 @@
 go.work
 
 game_of_life
+app
 __debug_bin*
 
 *.prof
