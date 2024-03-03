@@ -6,6 +6,7 @@ type cellState = byte
 
 const aliveCell cellState = 1
 const deadCell cellState = 0
+const fastforward = false
 
 type point struct {
 	y, x int
@@ -55,76 +56,7 @@ func (g *GOL) nextGeneration() {
 	g.grid = grid
 }
 
-func nextGeneration(m [6][6]cellState) [6][6]cellState {
-
-	const gridSize = 6
-	grid := [gridSize][gridSize]cellState{}
-
-	// for i, v := range m {
-	// 	copy(grid[i][:], v[:])
-	// }
-
-	for y := 0; y < gridSize; y++ {
-		for x := 0; x < gridSize; x++ {
-			c := m[y][x]
-			aliveNeighbours := countAliveNeighbours(m, y, x)
-			grid[y][x] = getNextGenerationState(aliveNeighbours, c)
-		}
-	}
-
-	return grid
-}
-
-func countAliveNeighbours(m [6][6]cellState, y int, x int) int {
-	const gridSize = 6
-
-	yyStart := max(0, y-1)
-	yyEnd := min(gridSize, y+2)
-	xxStart := max(0, x-1)
-	xxEnd := min(gridSize, x+2)
-
-	aliveNeighbours := 0
-
-	for yy := yyStart; yy < yyEnd; yy++ {
-		for xx := xxStart; xx < xxEnd; xx++ {
-			if y == yy && x == xx {
-				continue
-			}
-			if m[yy][xx] == aliveCell {
-				aliveNeighbours++
-			}
-		}
-	}
-
-	return aliveNeighbours
-}
-
-func getNextGenerationState(aliveNeighbours int, c cellState) cellState {
-
-	if c == aliveCell {
-
-		if aliveNeighbours < 2 {
-			return deadCell // dies
-		}
-
-		if aliveNeighbours <= 3 {
-			return aliveCell // live to the next generation
-		}
-
-		return deadCell // dies by overpopulation
-	} else if c == deadCell {
-		if aliveNeighbours == 3 {
-			return aliveCell // becomes alive by reproduction
-		}
-
-		return c
-	} else {
-		panic(fmt.Sprintf("\nbad cell state: %q", string(c)))
-	}
-}
-
 func (g *GOL) countAliveNeighbours(y int, x int) int {
-
 	yyStart := max(0, y-1)
 	yyEnd := min(g.gridSize, y+2)
 	xxStart := max(0, x-1)
@@ -156,21 +88,28 @@ func (g *GOL) prevGeneration() {
 	g.history = g.history[:len(g.history)-1]
 }
 
-////////////////////// tree base
+// tree base implementation of conway's game of life
 
 type evolveResult = *node
 
-var cacheResults map[*node]evolveResult = make(map[*node]evolveResult, 0)
+var cacheEvolveResults map[*node]evolveResult = make(map[*node]evolveResult, 100)
 
+// evolve performs evolution of the node (or at least the center of it)
+// it always return the center of the given node (the center is always half of
+// the size of th node).
 func evolve(n *node) evolveResult {
-	r, ok := cacheResults[n]
+
+	// we are reusing nodes, so if we once calculate the result of a node with given children
+	// then we can reuse it next time we see node with the same shape (children), no matter
+	// what level that node is.
+	r, ok := cacheEvolveResults[n]
 	if ok {
 		return r
 	}
 
 	if n.level == 3 {
 		r = evolveGol(n)
-		cacheResults[n] = r
+		cacheEvolveResults[n] = r
 		return r
 	}
 
@@ -253,7 +192,7 @@ func evolve(n *node) evolveResult {
 	res4 := assembleCenterNode(r5, r6, r8, r9)
 
 	var center *node
-	fastforward := false
+	// when fastforward is on, we jump a few generation each time we call evolve
 	if fastforward {
 		center = assembleCenterNode(
 			evolve(res1),
@@ -270,12 +209,28 @@ func evolve(n *node) evolveResult {
 		)
 	}
 
-	cacheResults[n] = center
+	cacheEvolveResults[n] = center
 
 	return center
 }
 
-var stateToCell = map[cellState]*node{deadCell: deadLeaf, aliveCell: aliveLeaf}
+// evolveGol implements the real evolutions of nodes(cells)
+// it converts node to matrix, performs the "evolution" base on rules,
+// then converts the matrix back to node. The resulting node is a center (i.e. 4x4 -> 2x2)
+// of the given node after evolution,
+func evolveGol(n *node) evolveResult {
+	m := convertNodeToAuxMatrix(n)
+	mNext := nextGeneration(m)
+	nextGenNode := convertAuxMatrixToNode(mNext)
+	return nextGenNode
+}
+
+func getCanonical(state cellState) *node {
+	if state == deadCell {
+		return deadLeaf
+	}
+	return aliveLeaf
+}
 
 func convertNodeToAuxMatrix(n *node) [6][6]cellState {
 
@@ -306,13 +261,6 @@ func convertNodeToAuxMatrix(n *node) [6][6]cellState {
 	m[4][4] = n.children.se.children.se.state
 
 	return m
-}
-
-func getCanonical(state cellState) *node {
-	if state == deadCell {
-		return deadLeaf
-	}
-	return aliveLeaf
 }
 
 func convertAuxMatrixToNode(m [6][6]cellState) *node {
@@ -364,13 +312,8 @@ func convertAuxMatrixToNode(m [6][6]cellState) *node {
 	return n
 }
 
-func evolveGol(n *node) evolveResult {
-	m := convertNodeToAuxMatrix(n)
-	mNext := nextGeneration(m)
-	nextGenNode := convertAuxMatrixToNode(mNext)
-	return nextGenNode
-}
-
+// generateCanonical0 creates a tree of nodes (which leaves are dead) where root will
+// be of the given level
 func generateCanonical0(level int) *node {
 	if level == 0 {
 		return nil
@@ -384,6 +327,8 @@ func generateCanonical0(level int) *node {
 	return n
 }
 
+// addBorder surrounds the given node with border (of nodes with dead leaves) which level
+// will be one higher and the given node will end up as the returned node's center.
 func addBorder(n *node) *node {
 	level := n.level
 
@@ -422,4 +367,71 @@ func getCenterNode(n *node) *node {
 	}
 
 	return newNode(children, n.level-1, n.size/2)
+}
+
+func nextGeneration(m [6][6]cellState) [6][6]cellState {
+	const gridSize = 6
+	grid := [gridSize][gridSize]cellState{}
+
+	for y := 0; y < gridSize; y++ {
+		for x := 0; x < gridSize; x++ {
+			c := m[y][x]
+			aliveNeighbours := countAliveNeighbours(m, y, x)
+			grid[y][x] = getNextGenerationState(aliveNeighbours, c)
+		}
+	}
+
+	return grid
+}
+
+// countAliveNeighbours is a helpers function that counts alive cells in an aux grid
+// created from node at level 3 (of size 4x4) with padding of dead cells to simplify
+// operations
+func countAliveNeighbours(m [6][6]cellState, y int, x int) int {
+	const gridSize = 6
+
+	yyStart := max(0, y-1)
+	yyEnd := min(gridSize, y+2)
+	xxStart := max(0, x-1)
+	xxEnd := min(gridSize, x+2)
+
+	aliveNeighbours := 0
+
+	for yy := yyStart; yy < yyEnd; yy++ {
+		for xx := xxStart; xx < xxEnd; xx++ {
+			if y == yy && x == xx {
+				continue
+			}
+			if m[yy][xx] == aliveCell {
+				aliveNeighbours++
+			}
+		}
+	}
+
+	return aliveNeighbours
+}
+
+// getNextGenerationState returns state of a cell in the next generation.
+// those are the basic rules for Conway's game of life.
+func getNextGenerationState(aliveNeighbours int, c cellState) cellState {
+
+	if c == aliveCell {
+		if aliveNeighbours < 2 {
+			return deadCell // dies
+		}
+
+		if aliveNeighbours <= 3 {
+			return aliveCell // live to the next generation
+		}
+
+		return deadCell // dies by overpopulation
+	} else if c == deadCell {
+		if aliveNeighbours == 3 {
+			return aliveCell // becomes alive by reproduction
+		}
+
+		return c
+	} else {
+		panic(fmt.Sprintf("\nbad cell state: %q", string(c)))
+	}
 }

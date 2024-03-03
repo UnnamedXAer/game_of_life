@@ -66,7 +66,7 @@ func dumpTreeRecHelper(n *node, grid [][]byte, y, x int) {
 func (g *GOL) dumpTreeRecursive() {
 	fmt.Println()
 	dumpTreeRecursive(g.root)
-	fmt.Printf("\ncached nodes: %4d, cached results: %4d", len(cacheNodes), len(cacheResults))
+	fmt.Printf("\ncached nodes: %4d, cached results: %4d", len(cacheNodes), len(cacheEvolveResults))
 }
 
 func dumpTreeRecursive(n *node) {
@@ -82,50 +82,4 @@ func dumpTreeRecursive(n *node) {
 		fmt.Println("|" + string(line) + "|")
 	}
 	fmt.Println("|" + strings.Repeat("-", gridSize) + "|")
-}
-
-type stack[T any] struct {
-	data []T
-}
-
-func (s *stack[T]) isEmpty() bool {
-	return len(s.data) == 0
-}
-
-func (s *stack[T]) push(item T) {
-	s.data = append(s.data, item)
-}
-
-func (s *stack[T]) pop() T {
-	item := s.data[len(s.data)-1]
-	s.data[len(s.data)-1] = *new(T)
-	s.data = s.data[:len(s.data)-1]
-	return item
-}
-
-func (s *stack[T]) top() T {
-	return s.data[len(s.data)-1]
-}
-
-type queue[T any] struct {
-	data []T
-}
-
-func (q *queue[T]) isEmpty() bool {
-	return len(q.data) == 0
-}
-
-func (q *queue[T]) push(item T) {
-	q.data = append(q.data, item)
-}
-
-func (q *queue[T]) pop() T {
-	item := q.data[0]
-	q.data[0] = *new(T)
-	q.data = q.data[1:]
-	return item
-}
-
-func (q *queue[T]) top() T {
-	return q.data[0]
 }
